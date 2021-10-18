@@ -1,7 +1,15 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import importRecordsFromFile from '@salesforce/apex/UploadController.importRecordsFromFile';
 
 export default class SensorsDatatable extends LightningElement {
+	@track showLoadingSpinner = false;
 	MAX_CSV_SIZE = 1500000;
+	fileUploaded;
+	fileUploadedName;
+	file;
+
+
 	columns = [
 		{ label: 'Sesnor Model', fieldName: 'Sensor_Model__c', type: 'text' },
 		{ label: 'Status', fieldName: 'Status__c', type: 'url', type: 'text' },
@@ -25,4 +33,13 @@ export default class SensorsDatatable extends LightningElement {
 			Base_Station__c : "Masherova 100 Minsk"
 		}
 	];
+
+	handleUpload(event) {
+		this.fileUploaded = event.target.files;
+		this.fileUploadedName = event.target.files.name;
+	}
+
+	handleInsert() {
+
+	}
 }

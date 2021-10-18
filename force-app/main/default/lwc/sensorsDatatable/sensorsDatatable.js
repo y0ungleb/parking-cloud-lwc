@@ -1,6 +1,7 @@
 import { LightningElement, api } from 'lwc';
 
 export default class SensorsDatatable extends LightningElement {
+	MAX_CSV_SIZE = 1500000;
 	columns = [
 		{ label: 'Sesnor Model', fieldName: 'Sensor_Model__c', type: 'text' },
 		{ label: 'Status', fieldName: 'Status__c', type: 'url', type: 'text' },

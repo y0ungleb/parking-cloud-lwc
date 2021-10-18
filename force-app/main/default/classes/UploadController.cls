@@ -3,7 +3,7 @@ public with sharing class UploadController {
     @AuraEnabled
     public static List<Sensor__c> importRecordsFromFile(String rawData) {
 
-        String data = JSON.deserialize(rawData).toString();
+        String data = JSON.deserializeUntyped(rawData).toString();
 
         List<Sensor__c> recordsToInsert = new List<Sensor__c>();
         List<String> CSVAllLines = data.split('\n');

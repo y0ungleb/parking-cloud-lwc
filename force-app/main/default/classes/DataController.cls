@@ -13,6 +13,6 @@ public with sharing class DataController {
     // @AuraEnabled(cacheable=true)
     // public static List<Base_Station__c> getBaseStationName() {
     //     List<Base_Station__c> baseStationList =  [SELECT Id, Name FROM Base_Station__c];
-    //     List<String> baseStationId = [SELECT Base_Station__c FROM Sensor__c];
+    //     return baseStationList;
     // }
 }

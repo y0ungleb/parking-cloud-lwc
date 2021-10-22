@@ -2,6 +2,20 @@
 <template>
 	<lightning-card title="Parking Sensors State">
 		<div class="slds-m-around_medium">
+			<lightning-layout horizontal-align="space" class="slds-m-bottom_x-large slds-box">
+				<lightning-layout-item flexibility="auto" class="slds-align_absolute-center">
+					<lightning-file-upload accept={acceptedCSVFormats} 
+													  label="Import CSV" 
+													  onuploadfinished={uploadFileHandler}  
+													  record-id={recordId}></lightning-file-upload>
+				</lightning-layout-item>
+				<lightning-layout-item flexibility="auto" class="slds-align_absolute-center">
+					<lightning-button variant="brand" 
+													title="Export CSV" 
+													label="Export CSV" 
+													onclick={downloadFileHandler}></lightning-button>
+				</lightning-layout-item>
+			</lightning-layout>
 			<lightning-datatable key-field="id"
 										data={data}
 										columns={columns}
@@ -9,8 +23,7 @@
 										onrowaction={onRowActionHandler}
 										show-row-number-column="true">
 		 </lightning-datatable>
-		 <br>
-		 <lightning-layout horizontal-align="space">
+		 <lightning-layout horizontal-align="space" class="slds-m-top_medium slds-box">
 			<lightning-layout-item flexibility="auto" class="slds-align_absolute-center"> 
 				<lightning-button-group>
 					<lightning-button variant="neutral" 
@@ -55,11 +68,6 @@
 		</lightning-layout>
 		</div>
 	</lightning-card>
-	<!-- <lightning-file-upload accept={acceptedCSVFormats} 
-                                   label="Attach receipt" 
-                                   onuploadfinished={uploadFileHandler} 
-											  multiple="multiple" 
-                                   record-id={recordId}></lightning-file-upload> -->
 	<template if:true={showLoadingSpinner}>
 		<div style="z-index: 10000 !important;">
 			 <lightning-spinner alternative-text="Uploading......" size="medium" style="z-index: 10000 !important;"></lightning-spinner>

@@ -16,7 +16,8 @@ export default class SensorsDatatable extends LightningElement {
 	@track error
 
 	//Pagination
-	@track page = 1
+	//@track page = 1
+	@track page = 0
 	@track items //Actually loaded data
 	@track startingRecord = 1
 	@track endingRecord = 0
@@ -36,6 +37,7 @@ export default class SensorsDatatable extends LightningElement {
 
 	wiredDataResult
 
+	//Data upload
 	@track uploadedFiles
 
 	/* ======= Getters ======= */
@@ -50,8 +52,8 @@ export default class SensorsDatatable extends LightningElement {
 
 	get columns() {
 		return [
-			{ label: 'Sensor Name', fieldName: 'Name', type: "text"},
-			{ label: 'Base Station', fieldName: 'Base_Station__c', type: "text"},
+			{ label: 'Sensor Name', fieldName: 'Name', type: 'text' },
+			{ label: 'Base Station', fieldName: 'Base_Station_Name__c', type: 'text' },
 			{ label: 'Status', fieldName: 'Status__c', type: 'text' },
 			{ label: 'Sensor Model', fieldName: 'Sensor_model__c', type: 'text' },
 			{ label: 'Actions', type: 'action', typeAttributes: { rowActions: this.actions }}
@@ -139,12 +141,70 @@ export default class SensorsDatatable extends LightningElement {
 	});
 }
 
+downloadFileHandler() {
+	if(this.wiredDataResult.data.length == 0) {
+		this.dispatchEvent(
+			new ShowToastEvent({
+				title: 'Error',
+				message: 'Error: Database is empty',
+				variant: 'error'
+			})
+		)
+		return;
+	}
+	let csvResult = '';
+	let columnDivider = ',';
+	let lineDivider = '\n';
+
+	csvResult += this.fileColumns.join(columnDivider);
+	csvResult += lineDivider;
+
+	let wiredResultClone = this.wiredDataResult;
+	
+	for(let i = 0; i < wiredResultClone.data.length; i++) {
+		if(!wiredResultClone.data[i].Base_Station__c || !wiredResultClone.data[i].Status__c || !wiredResultClone.data[i].Sensor_model__c) {
+			let arrToConc1 = wiredResultClone.data.slice(0, i);
+			let arrToConc2 = wiredResultClone.data.slice(i+1, wiredResultClone.data.length);
+			wiredResultClone.data = arrToConc1.concat(arrToConc2);
+		}
+	}
+
+	for(let i = 0; i < wiredResultClone.data.length; i++) {
+		csvResult += wiredResultClone.data[i].Base_Station__r.Name + columnDivider + 
+						 wiredResultClone.data[i].Status__c + columnDivider +
+						 wiredResultClone.data[i].Sensor_model__c + lineDivider;
+	}
+	
+	let hiddenElement = document.createElement('a');
+	hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvResult);
+	hiddenElement.target = '_self';
+	hiddenElement.download = 'SensorData.csv'; 
+	hiddenElement.click();
+	this.dispatchEvent(
+		new ShowToastEvent({
+			title: 'Success',
+			message: 'CSV downloaded',
+			variant: 'success'
+		})
+	);
+}
+
   onRowActionHandler(event) {
 	switch(event.detail.action.label) {
 		case 'View Sensor': 
 				window.open(this.orgUrl + 'lightning/r/Sensor__c/' + event.detail.row.Id + '/view');
 				break;
 		case 'View Base Station': 
+				if(event.detail.row.Base_Station__c == undefined) {
+					this.dispatchEvent(
+						new ShowToastEvent({
+							title: 'Error',
+							message: 'Sensor is not assigned to any Base Station',
+							variant: 'error'
+						})
+					);
+					break;
+				}
 				window.open(this.orgUrl + 'lightning/r/Base_Station__c/' + event.detail.row.Base_Station__c + '/view');
 				break;
 		case 'Delete':
@@ -157,6 +217,9 @@ export default class SensorsDatatable extends LightningElement {
 							variant: 'success'
 						})
 					);
+					if(this.items.length == 1) {
+						this.data = 0;
+					}
 					this.refreshData();
 				})
 				.catch(error => {
@@ -228,8 +291,12 @@ export default class SensorsDatatable extends LightningElement {
 	setTable() {
 		this.totalRecountCount = this.items.length;
 		if(this.items.length == 0) {
+			this.isNextLastDisabled = true;
 			this.page = 0;
+			this.totalPage = 0;
+			return;
 		}
+		this.page = 1;
 		this.totalPage = Math.ceil(this.totalRecountCount/this.pageSize);
 		this.data = this.items.slice(0, this.pageSize);
 		this.endingRecord = this.pageSize;
@@ -251,36 +318,5 @@ export default class SensorsDatatable extends LightningElement {
 
 	refreshData() {
 		return refreshApex(this.wiredDataResult);
-	}
-
-	downloadFileHandler() {
-		let csvResult = '';
-		let columnDivider = ',';
-		let lineDivider = '\n';
-
-		csvResult += this.fileColumns.join(columnDivider);
-		csvResult += lineDivider;
-
-		let wiredResultClone = this.wiredDataResult;
-		
-		for(let i = 0; i < wiredResultClone.data.length; i++) {
-			if(!wiredResultClone.data[i].Base_Station__c || !wiredResultClone.data[i].Status__c || !wiredResultClone.data[i].Sensor_model__c) {
-				let delAr1 = wiredResultClone.data.slice(0, i);
-				let delAr2 = wiredResultClone.data.slice(i+1, wiredResultClone.data.length);
-				wiredResultClone.data = delAr1.concat(delAr2);
-			}
-		}
-
-		for(let i = 0; i < wiredResultClone.data.length; i++) {
-			csvResult += wiredResultClone.data[i].Base_Station__r.Name + columnDivider + 
-							 wiredResultClone.data[i].Status__c + columnDivider +
-							 wiredResultClone.data[i].Sensor_model__c + lineDivider;
-		}
-		
-		let hiddenElement = document.createElement('a');
-		hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvResult);
-   	hiddenElement.target = '_self';
-      hiddenElement.download = 'SensorData.csv'; 
-    	hiddenElement.click();
 	}
 }

@@ -7,12 +7,6 @@ public with sharing class DataController {
 
     @AuraEnabled(cacheable=true)
     public static List<Sensor__c> getSensorsList() {
-        return [SELECT Id, Name, Base_Station__r.Name, Status__c, Sensor_Model__c FROM Sensor__c];
+        return [SELECT Id, Name, Base_Station__c, Base_Station__r.Name, Base_Station_Name__c, Status__c, Sensor_Model__c FROM Sensor__c];
     }
-
-    // @AuraEnabled(cacheable=true)
-    // public static List<Base_Station__c> getBaseStationName() {
-    //     List<Base_Station__c> baseStationList =  [SELECT Id, Name FROM Base_Station__c];
-    //     return baseStationList;
-    // }
 }

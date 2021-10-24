@@ -10,6 +10,7 @@ public with sharing class UploadController {
             
             ContentVersion contentVersionObj = [SELECT Id, VersionData FROM ContentVersion WHERE ContentDocumentId = :docId];
             List<String> csvRecordsList = contentVersionObj.VersionData.toString().split('\n');
+            Boolean bsExists = true;
 
             for(Integer i = 1; i < csvRecordsList.size(); i++){
                 Sensor__c sensorObj = new Sensor__c();
@@ -22,6 +23,16 @@ public with sharing class UploadController {
                 sensorObj.Status__c = csvRowData[1];
                 sensorObj.Sensor_Model__c = csvRowData[2];
                 sensorInsertList.add(sensorObj);
+            }
+            
+            for(Sensor__c senIt : sensorInsertList) {
+                if(senIt.Base_Station__c == null) {
+                    bsExists = false;
+                }
+            }
+
+            if(!bsExists) {
+                throw new AuraHandledException('Unknown Base Station in file');
             }
 
             if(!sensorInsertList.isEmpty()) {
